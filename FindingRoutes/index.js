@@ -1,3 +1,9 @@
+const main = require("./index_copy.js");
+var http = require('http');
+var fs = require('fs');
+
+const PORT=8080;
+
 const { request } = require('express');
 const express = require('express');
 const app = express();
@@ -10,7 +16,7 @@ const polylineDecoder = "@googlemaps/polyline-codec";
 
 async function fetchRouteData() {
   try {
-    const mapsAPI = `https://maps.googleapis.com/maps/api/directions/json?destination=Montreal&origin=Toronto&key=${mapAPIKey}`;
+    const mapsAPI = `https://maps.googleapis.com/maps/api/directions/json?destination=Palatine&origin=Wheeling&key=${mapAPIKey}`;
     const response = await axios.get(mapsAPI);
     const routeSteps = response.data.routes[0].legs[0].steps;
     const polyline = [];
@@ -91,7 +97,34 @@ app.get('/api/createRoute/:startLocation/:endLocation', async(req, res) => {
     const startLocationValue = req.params.startLocation;
     const endLocationValue = req.params.endLocation;
     const routeData = await fetchRouteData();
-    res.send(routeData);
+    const toSend = await main.main(routeData)
+      .then(toSend => {
+        console.log("toSend: ", toSend);
+        const firstElements = toSend.map(line => {
+          const parts = line.split(',');
+          return "\'" + parts[0] + "\'"; // Take the first element
+        });
+        console.log("first: ", firstElements);
+        fs.readFile('./index.html', function (err, html) {
+
+          if (err) throw err;    
+
+          let htmlString = html.toString();
+          console.log(htmlString);
+          htmlString = htmlString.replace("//REPLACE_THIS", "\"ID\": \[" + firstElements + "\]");
+          console.log(htmlString);
+          
+      
+          http.createServer(function(request, response) {  
+              response.writeHeader(200, {"Content-Type": "text/html"});  
+              response.write(htmlString);  
+              response.end();  
+          }).listen(PORT);
+        });
+        res.send(toSend);})
+      .catch(error => {
+          console.error('Error filtering and storing lines:', error);
+      });
 });
 
 
