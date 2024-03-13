@@ -1,12 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        <title>Hello World Simple App</title>
-    </head>
-    <body>
-        <div>Hello World!</div>
-    </body>
+<html>
+
+<head>
+    <title>Filter</title>
+
+    <script type="text/javascript"
+        src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+
+    <script type="text/javascript">
+        var viz;
+
+        function initViz() {
+            var containerDiv = document.getElementById("vizContainer"),
+                url = "https://10ax.online.tableau.com/t/safetrips/views/AccidentGraph/Sheet1",
+                options = {
+                    //REPLACE_THIS,
+                    hideTabs: true
+                };
+
+            viz = new tableau.Viz(containerDiv, url, options);
+        }
+    </script>
+</head>
+
+<body onload="initViz();">
+    <div id="vizContainer" style="width:800px; height:700px;"></div>
+</body>
+
 </html>
