@@ -18,15 +18,20 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 // Function to filter and store lines close to specified latitude-longitude combinations
 async function filterAndStoreLines(filePath, latLongCombinations, maxDistance) {
+    let min = 24.5548;
+    let max = 49.002201;
+    let seg = (max - min)/120;
     const filteredLines = [];
-    const rl = readline.createInterface({
-        input: fs.createReadStream(filePath),
-        crlfDelay: Infinity // To recognize '\r\n' as a single newline
-    });
 
-    for await (const line of rl) {
-        const [lat, lon] = line.split(',').slice(5, 7).map(Number); // Assuming latitude and longitude are the first two columns
-        for (const [targetLat, targetLon] of latLongCombinations) {
+    for (const [targetLat, targetLon] of latLongCombinations) {
+        let filePathNum = Math.trunc((targetLat - min)/seg);
+        filePath = "dataset" + filePathNum;
+        const rl = readline.createInterface({
+            input: fs.createReadStream(filePath),
+            crlfDelay: Infinity // To recognize '\r\n' as a single newline
+        });
+        for await (const line of rl) {
+            const [lat, lon] = line.split(',').slice(5, 7).map(Number); // Assuming latitude and longitude are the first two columns
             const distance = calculateDistance(lat, lon, targetLat, targetLon);
             //console.log(distance);
             if (distance <= maxDistance) {
